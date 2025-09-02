@@ -1,7 +1,7 @@
 package com.crud_repeat_nocopy_0828.user.service;
 
 import com.crud_repeat_nocopy_0828.common.config.PasswordEncoder;
-import com.crud_repeat_nocopy_0828.user.dto.LoginRequestDto;
+import com.crud_repeat_nocopy_0828.user.dto.request.LoginRequestDto;
 import com.crud_repeat_nocopy_0828.user.dto.request.UserSaveRequestDto;
 import com.crud_repeat_nocopy_0828.user.dto.request.UserUpdateRequestDto;
 import com.crud_repeat_nocopy_0828.user.dto.response.UserResponseDto;

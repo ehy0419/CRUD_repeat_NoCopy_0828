@@ -1,7 +1,7 @@
 package com.crud_repeat_nocopy_0828.user.controller;
 
 import com.crud_repeat_nocopy_0828.common.consts.Const;
-import com.crud_repeat_nocopy_0828.user.dto.LoginRequestDto;
+import com.crud_repeat_nocopy_0828.user.dto.request.LoginRequestDto;
 import com.crud_repeat_nocopy_0828.user.entity.User;
 import com.crud_repeat_nocopy_0828.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;

@@ -1,4 +1,4 @@
-package com.crud_repeat_nocopy_0828.user.dto;
+package com.crud_repeat_nocopy_0828.user.dto.request;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
