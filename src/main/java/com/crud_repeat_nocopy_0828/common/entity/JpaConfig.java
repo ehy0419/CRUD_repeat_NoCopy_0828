@@ -10,7 +10,7 @@ import java.time.ZoneId;
 import java.util.Optional;
 
 @Configuration
-@EnableJpaAuditing
+@EnableJpaAuditing      // Spring Data JPA 에서 Auditing 을 적용할 때 사용하는 어노테이션
 // BaseEntity를 사용하기 위해서 @MappedSuperclass(BaseEntity) + @EnableJpaAuditing(main) 사용
 public class JpaConfig {
 

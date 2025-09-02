@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 // 롬복(Lombok) 애너테이션
 // getter와 기본 생성자를 자동 생성해 줍니다.
-// 컴파일 시점(Annotation Processing 단계)에 getId(), getUserName() 같은 메서드와 기본 생성자를 자동 생성합니다.
+// 컴파일 시점(Annotation Processing 단계)에 getId(), getName() 같은 메서드와 기본 생성자를 자동 생성합니다.
 
 @Entity
 // 이 클래스를 JPA 엔티티로 등록. 엔티티 매니저가 영속성 컨텍스트에서 관리할 수 있게 됩니다.
@@ -164,15 +164,15 @@ public class User extends BaseEntity {
     private Long id;
 
     @Column(name = "user_name", nullable=false, length=50, unique=true)
-    private String userName;
+    private String name;
     // @Column을 생략하면 기본 컬럼 매핑. 보통 VARCHAR(255), nullable=true로 생성(디폴트).
     // 비즈니스 제약(UNIQUE/NOT NULL/길이)은 @Column(nullable=false, length=...), @UniqueConstraint 등으로 명시 추천.
 
     @Column(nullable=false, length=60, unique=true)
     // length 크기설정
     // size dto에서 설정.
+    // unique에서 UK 설정.
     private String email;
-
 
     private String password;
 
@@ -193,8 +193,8 @@ public class User extends BaseEntity {
      * columnDefinition은 DB 의존적이라 이식성이 떨어집니다. 꼭 필요할 때만 사용.
      * */
 
-    public User(String userName, String email, String password) {
-        this.userName = userName;
+    public User(String name, String email, String password) {
+        this.name = name;
         this.email = email;
         this.password = password;
     }

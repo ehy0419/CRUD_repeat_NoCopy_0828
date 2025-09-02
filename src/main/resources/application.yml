@@ -3,12 +3,11 @@ spring:
     url: jdbc:mysql://localhost:3306/${DB_NAME}
     username: ${USER_NAME}
     password: ${PASSWORD}
-    # ??? ?? ?? ?? (URL? ???? ????) ? ??? ??
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
     hibernate:
-      ddl-auto: update   # ?? ? ???. ??? validate/none ??
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
