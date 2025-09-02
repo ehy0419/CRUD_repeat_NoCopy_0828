@@ -13,7 +13,8 @@ public class UserSaveRequestDto {
     private String name;
 
     @NotBlank(message = "이메일은 필수 입력값입니다.")
-    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$", message = "유효한 이메일 형식이 아닙니다.")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$",
+            message = "비밀번호는 대소문자, 숫자, 특수문자를 포함해 8자 이상이어야 합니다.")
     private String email;
 
     @NotBlank(message = "비밀번호는 필수 입력값입니다.")

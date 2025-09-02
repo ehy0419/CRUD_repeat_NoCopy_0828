@@ -8,12 +8,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 // 롬복(Lombok) 애너테이션
 // getter와 기본 생성자를 자동 생성해 줍니다.
-// 컴파일 시점(Annotation Processing 단계)에 getId(), getName() 같은 메서드와 기본 생성자를 자동 생성합니다.
+// 컴파일 시점(Annotation Processing 단계)에 getId(), getUsername() 같은 메서드와 기본 생성자를 자동 생성합니다.
 
 @Entity
 // 이 클래스를 JPA 엔티티로 등록. 엔티티 매니저가 영속성 컨텍스트에서 관리할 수 있게 됩니다.
 // @Table을 생략하면 기본 테이블명은 클래스명(User)을 스네이크케이스("user")로 유추(벤더/네이밍전략에 따라)합니다.
-// 참고: 데이터베이스에 따라 "user"는 예약어일 수 있어 @Table(name="users")로 명시하는 습관이 좋습니다.
+// 참고: 데이터베이스에 따라 "user"는 예약어일 수 있어 @Table(username="users")로 명시하는 습관이 좋습니다.
 
 /**
  * @Entity 가 붙으면 내부적으로 있는 일은?
@@ -72,7 +72,7 @@ import lombok.NoArgsConstructor;
  *
  * 2) 원리/논리
  * 애플리케이션 기동 시 JPA가 엔티티 메타데이터를 만들고, @Table에 지정된 이름을 테이블 식별자로 사용합니다.
- * 스키마 자동생성(spring.jpa.hibernate.ddl-auto=create|update)을 쓰면, 이 이름으로 DDL을 생성합니다.
+ * 스키마 자동생성(spring.jpa.hibernate.ddl-auto=save|update)을 쓰면, 이 이름으로 DDL을 생성합니다.
  *
  * 3) 팁
  * 팀 컨벤션(복수형 테이블명, 스네이크 케이스 등)을 애너테이션으로 고정해 두면, 장기 유지보수에서 헷갈림이 줄어요.
@@ -165,7 +165,7 @@ public class User extends BaseEntity {
     private Long id;
 
     @Column(name = "user_name", nullable = false, length = 50, unique = true)
-    private String name;
+    private String username;
     // @Column을 생략하면 기본 컬럼 매핑. 보통 VARCHAR(255), nullable=true로 생성(디폴트).
     // 비즈니스 제약(UNIQUE/NOT NULL/길이)은 @Column(nullable=false, length=...), @UniqueConstraint 등으로 명시 추천.
 
@@ -195,8 +195,8 @@ public class User extends BaseEntity {
      *
      */
 
-    public User(String name, String email, String password) {
-        this.name = name;
+    public User(String username, String email, String password) {
+        this.username = username;
         this.email = email;
         this.password = password;
     }
@@ -210,7 +210,7 @@ public class User extends BaseEntity {
     }
 
     public void update(String name, String email, String password) {
-        this.name = name;
+        this.username = name;
         this.email = email;
         this.password = password;
     }

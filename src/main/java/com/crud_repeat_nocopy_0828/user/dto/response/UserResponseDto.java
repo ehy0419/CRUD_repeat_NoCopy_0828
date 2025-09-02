@@ -3,7 +3,6 @@ package com.crud_repeat_nocopy_0828.user.dto.response;
 import lombok.Getter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 public class UserResponseDto {
@@ -15,7 +14,7 @@ public class UserResponseDto {
 
     public UserResponseDto(Long id,
                            String name, String email,
-                           LocalDateTime createdAt, LocalDateTime updatedAt
+                           LocalDate createdAt, LocalDate updatedAt
     ) {
         this.id = id;
         this.name = name;
@@ -23,3 +22,4 @@ public class UserResponseDto {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
+}

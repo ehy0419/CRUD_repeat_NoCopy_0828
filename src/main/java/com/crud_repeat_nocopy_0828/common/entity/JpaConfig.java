@@ -19,4 +19,5 @@ public class JpaConfig {
         // 감사 필드(LocalDate)용 — 한국 시간대의 '오늘' 날짜를 사용
         return () -> Optional.of(LocalDate.now(ZoneId.of("Asia/Seoul")));
     }
+
 }
