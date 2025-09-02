@@ -1,0 +1,131 @@
+# CRUD_repeat_NoCopy_0828 — REST Client Requests
+# Generated from your ReadMe_API.md spec (session 기반 인증).
+# VS Code REST Client / IntelliJ HTTP Client 모두 사용 가능.
+#
+# [중요] 세션 기반이므로 Login 응답의 Set-Cookie가 이후 요청에 자동 포함되도록
+# - VS Code: 설정에서 `rest-client.enableCookieJar: true` 권장 (기본 true)
+# - IntelliJ: HTTP Client 기본 쿠키 저장소 사용
+#
+# 상태코드 메모 (당신이 남겨주신 고민 반영):
+# - 로그인은 일반적으로 200 OK가 더 일반적(세션 생성) — 스펙에 201 CREATED가 적혀 있어도 클라 테스트는 200/201 모두 허용 관점으로 점검 가능
+# - 로그아웃은 본문이 없으면 204 No Content, 본문 메시지가 있으면 200 OK
+# - 리소스 수정(PUT/PATCH)는 보통 200 OK(바디 포함) 또는 204 No Content(바디 없음). 202 Accepted는 비동기 처리 의미라 비권장
+#
+
+### -------------------------------------------------------------
+### 공통 변수
+### -------------------------------------------------------------
+@baseUrl = http://localhost:8080
+# ⚠️ 회원가입은 이메일 중복 시 400 날 수 있어요. 새 이메일로 바꿔주세요.
+@email = newuser1@example.com
+@pwd = pass1234!
+
+### -------------------------------------------------------------
+### Auth — Login / Logout (SESSION)
+### -------------------------------------------------------------
+
+### Login (POST /login)
+# RequestBody: {"email": string, "password": string}
+# 정상: 200 OK, Set-Cookie: JSESSIONID=...
+# 이후 요청은 쿠키 자동 포함(쿠키저장 on)
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "email": "{{email}}",
+  "password": "{{pwd}}"
+}
+
+### Logout (POST /logout)
+# 현재 구현은 본문 메시지와 함께 200 OK 반환
+POST {{baseUrl}}/logout
+
+
+### -------------------------------------------------------------
+### Users — 사용자
+### -------------------------------------------------------------
+
+### 회원가입 (POST /users/signup)
+# RequestBody: { "name": string(≤4자), "email": string, "password": string }
+# 정상: 200 OK(현재 구현), 중복/형식 오류 시 400
+POST {{baseUrl}}/users/signup
+Content-Type: application/json
+
+{
+  "name": "길동",
+  "email": "{{email}}",
+  "password": "{{pwd}}"
+}
+
+### 모든 사용자 조회 (GET /users) — 로그인 필요
+GET {{baseUrl}}/users
+
+### 단일 사용자 조회 (GET /users/{id}) — 로그인 필요
+@userId = 1
+GET {{baseUrl}}/users/{{userId}}
+
+### 내 정보 수정 (PUT /users/me) — 로그인 필요
+# RequestBody: { "name": string, "email": string, "password": string }
+PUT {{baseUrl}}/users/me
+Content-Type: application/json
+
+{
+  "name": "길순",
+  "email": "{{email}}",
+  "password": "newPass!234"
+}
+
+### 회원 탈퇴 (DELETE /users/me) — 로그인 필요
+# 정상: 204 No Content
+DELETE {{baseUrl}}/users/me
+
+
+### -------------------------------------------------------------
+### Schedules — 일정 (클래스 레벨 매핑: /schedules)
+### -------------------------------------------------------------
+
+### 일정 생성 (POST /schedules) — 로그인 필요
+# RequestBody: { "title": string(≤50), "content": string }
+# 정상: 201 Created + Location: /schedules/{id}
+POST {{baseUrl}}/schedules
+Content-Type: application/json
+
+{
+  "title": "팀 미팅",
+  "content": "주간 진행 점검"
+}
+
+### 모든 일정 조회 (GET /schedules) — 로그인 필요
+GET {{baseUrl}}/schedules
+
+### 단일 일정 조회 (GET /schedules/{id}) — 로그인 필요
+@scheduleId = 1
+GET {{baseUrl}}/schedules/{{scheduleId}}
+
+### 일정 수정 (PUT /schedules/{id}) — 로그인 필요
+# RequestBody: { "title": string(≤50), "content": string }
+PUT {{baseUrl}}/schedules/{{scheduleId}}
+Content-Type: application/json
+
+{
+  "title": "팀 미팅(시간 변경)",
+  "content": "주간 진행 점검 + 리스크 논의"
+}
+
+### 일정 삭제 (DELETE /schedules/{id}) — 로그인 필요
+# 정상: 204 No Content
+DELETE {{baseUrl}}/schedules/{{scheduleId}}
+
+
+### -------------------------------------------------------------
+### (참고) Comments — 댓글
+### -------------------------------------------------------------
+# ⚠️ 현재 커밋 기준 컨트롤러/서비스 엔드포인트가 보이지 않고, 엔티티만 존재합니다.
+# 아래는 향후 구현 시에 맞추어 추가 예정으로 남겨둡니다.
+# POST /schedules/{scheduleId}/comments
+# GET /schedules/{scheduleId}/comments
+# GET /comments/{id}
+# PUT /comments/{id}
+# DELETE /comments/{id}
+
+# 끝
