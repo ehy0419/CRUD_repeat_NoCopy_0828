@@ -1,6 +1,7 @@
 package com.crud_repeat_nocopy_0828.user.service;
 
 import com.crud_repeat_nocopy_0828.common.config.PasswordEncoder;
+import com.crud_repeat_nocopy_0828.user.dto.LoginRequestDto;
 import com.crud_repeat_nocopy_0828.user.dto.request.UserSaveRequestDto;
 import com.crud_repeat_nocopy_0828.user.dto.request.UserUpdateRequestDto;
 import com.crud_repeat_nocopy_0828.user.dto.response.UserResponseDto;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,13 +27,17 @@ public class UserService {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new IllegalArgumentException("해당 이메일은 이미 사용중입니다.");
         }
+        /**
+         * 현재 IllegalArgumentException만 던지면 전부 500이 날 수 있어요.
+         * 용도별 예외를 던지고 전역 예외 처리기로 HTTP 코드에 매핑하세요.
+         * */
 
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
         User user = new User(dto.getName(), dto.getEmail(), encodedPassword);
         userRepository.save(user);
         return new UserResponseDto(
                 user.getId(),
-                user.getName(),
+                user.getUsername(),
                 user.getEmail(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
@@ -43,7 +49,7 @@ public class UserService {
         return userRepository.findAll().stream()
                 .map(user -> new UserResponseDto(
                         user.getId(),
-                        user.getName(),
+                        user.getUsername(),
                         user.getEmail(),
                         user.getCreatedAt(),
                         user.getUpdatedAt()))
@@ -56,7 +62,7 @@ public class UserService {
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저가 존재하지 않습니다."));
         return new UserResponseDto(
                 user.getId(),
-                user.getName(),
+                user.getUsername(),
                 user.getEmail(),
                 user.getCreatedAt(),
                 user.getUpdatedAt());
@@ -71,7 +77,7 @@ public class UserService {
         user.update(dto.getName(), dto.getEmail(), encodedPassword);
         return new UserResponseDto(
                 user.getId(),
-                user.getName(),
+                user.getUsername(),
                 user.getEmail(),
                 user.getCreatedAt(),
                 user.getUpdatedAt());
@@ -83,13 +89,11 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public Long handleLogin(LoginRequestDto dto) {
+    public User login(LoginRequestDto dto) {       // String email, String rawPassword -> LoginRequestDto dto
         User user = userRepository.findByEmail(dto.getEmail()).orElseThrow(
-                () -> new InvalidCredentialException("해당 이메일이 존재하지 않습니다."));
-
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new InvalidCredentialException("비밀번호가 일치하지 않습니다.");
-        }
-        return user.getId();
+                () -> new NoSuchElementException("이메일 또는 비밀번호가 올바르지 않습니다."));   // 무엇이 틀렸는지 유추 금지
+        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword()))
+            throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");      // 무엇이 틀렸는지 유추 금지
+        return user;
     }
 }
