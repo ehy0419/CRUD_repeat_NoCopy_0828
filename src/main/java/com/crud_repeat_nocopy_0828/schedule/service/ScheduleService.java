@@ -141,9 +141,11 @@ public class ScheduleService {
 
     ///  version 2 return toDto(saved); 사용하지 않을 때 (직접 풀어쓰기)
     @Transactional
-    public ScheduleResponseDto save(ScheduleSaveRequestDto request) {
-        User user = userRepository.findById(request.getUserId()).orElseThrow(
-                () -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")
+    public ScheduleResponseDto save(Long loginUserId, ScheduleSaveRequestDto request) {
+        User user = userRepository.findById(loginUserId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다.")
+                // 리팩터링 방향(세션 신뢰)
+                //요청 DTO에서 userId를 제거하고, Service 시그니처를 (loginUserId, …) 형태로 통일.
         );
 
         Schedule schedule = new Schedule(
@@ -158,7 +160,7 @@ public class ScheduleService {
         return new ScheduleResponseDto(
                 savedSchedule.getId(),
                 savedSchedule.getUser().getId(),
-                savedSchedule.getUser().getName(),
+                savedSchedule.getUser().getUsername(),
                 savedSchedule.getTitle(),
                 savedSchedule.getContent(),
                 savedSchedule.getCreatedAt(),
@@ -178,7 +180,7 @@ public class ScheduleService {
             // result.add(new ScheduleResponseDto(                              // /// version2 사용하지 않을 때: 직접 생성 (참고용)
             //         schedule.getId(),
             //         schedule.getUser().getId(),
-            //         schedule.getUser().getName(),
+            //         schedule.getUser().getUsername(),
             //         schedule.getTitle(),
             //         schedule.getContent(),
             //         schedule.getCreatedAt(),
@@ -211,7 +213,7 @@ public class ScheduleService {
 //                .map(s -> new ScheduleResponseDto(
 //                        s.getId(),
 //                        s.getUser().getId(),
-//                        s.getUser().getName(),
+//                        s.getUser().getUsername(),
 //                        s.getTitle(),
 //                        s.getContent(),
 //                        s.getCreatedAt(),
@@ -234,7 +236,7 @@ public class ScheduleService {
 //            scheduleResponseDtos.add(new ScheduleResponseDto(
 //                    schedule.getId(),
 //                    user.getId(),
-//                    user.getName(),
+//                    user.getUsername(),
 //                    schedule.getTitle(),
 //                    schedule.getContent(),
 //                    schedule.getCreatedAt(),
@@ -270,12 +272,15 @@ public class ScheduleService {
 
     ///  version 1 return toDto(schedule); 사용할 때
     @Transactional
-    public ScheduleResponseDto update(Long scheduleId, ScheduleUpdateRequestDto dto) {
+    public ScheduleResponseDto update(Long loginUserId, Long scheduleId, ScheduleUpdateRequestDto dto) {
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스케줄이 존재하지 않습니다."));
-        if (!schedule.getUser().getId().equals(dto.getUserId())) {
-            throw new IllegalArgumentException("본인이 작성한 스케줄만 수정할 수 있습니다.");
+
+        if (!schedule.getUser().getId().equals(loginUserId)) {
+            // 인증은 됐지만 권한이 없는 경우 → 403으로 매핑하는 게 적절(아래 예외 핸들러 참고)
+            throw new SecurityException("본인이 작성한 스케줄만 수정할 수 있습니다.");
         }
+
         schedule.update(
                 dto.getTitle(),
                 dto.getContent()
@@ -303,10 +308,13 @@ public class ScheduleService {
 
     ///  version 1
     @Transactional
-    public void deleteById(Long scheduleId, Long userId) {
+    public void delete(Long loginUserId, Long scheduleId) {  // deleteById(Long userId, Long scheduleId) ->
+        ///  파라미터 순서 지키자.
+        // Service는 (scheduleId, userId)인데 -> (Long userId, Long scheduleId) 수정
+        // Controller는 (userId, id)로 호출 → 컴파일은 되지만 권한 체크가 틀어지는 잠재 버그.
         Schedule schedule = scheduleRepository.findById(scheduleId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 스케줄이 존재하지 않습니다."));
-        if (!userId.equals(schedule.getUser().getId())) {
+        if (!loginUserId.equals(schedule.getUser().getId())) {       // 사용자 id와 일정 작성자 id 비교
             throw new IllegalArgumentException("본인이 작성한 스케줄만 삭제할 수 있습니다.");
         }
         scheduleRepository.delete(schedule);
@@ -317,7 +325,7 @@ public class ScheduleService {
 //    public void deleteById(Long scheduleId, Long userId) {
 //        Schedule schedule = scheduleRepository.findById(scheduleId)
 //                .orElseThrow(() -> new IllegalArgumentException("해당 스케줄이 존재하지 않습니다."));
-//        if (!schedule.getUser().getId().equals(userId)) {
+//        if (!schedule.getUser().getId().equals(userId)) {     // 일정 작성자id와 사용자 id 비교
 //            throw new IllegalArgumentException("본인이 작성한 스케줄만 삭제할 수 있습니다.");
 //        }
 //        scheduleRepository.delete(schedule);
@@ -333,7 +341,7 @@ public class ScheduleService {
         return new ScheduleResponseDto(
                 schedule.getId(),               // 1) 스케줄 PK: 리소스의 고유 식별자(URI 구성/클라이언트 저장용)
                 schedule.getUser().getId(),     // 2) 작성자 PK: 권한 체크/프론트에서 본인글 표시 등에 필요
-                schedule.getUser().getName(),   // 3) 작성자 이름: 리스트/상세에서 바로 표시하려고 함께 내려줌
+                schedule.getUser().getUsername(),   // 3) 작성자 이름: 리스트/상세에서 바로 표시하려고 함께 내려줌
                 schedule.getTitle(),            // 4) 제목
                 schedule.getContent(),          // 5) 내용
                 schedule.getCreatedAt(),        // 6) 생성 시각: 정렬/표시/감사로그 등에 유용
