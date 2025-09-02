@@ -129,7 +129,7 @@ public class User extends BaseEntity {
      * A와 같은 이름의 메서드를 호출할 때 어떤 메서드가 실행될지 결정할 수 없는 문제가 바로 다이아몬드 문제이며,
      * 이를 해결하기 위해 자바는 클래스의 다중 상속을 제한하고,
      * 인터페이스의 다중 상속은 허용하지만 default 메서드 충돌 시 해결책을 명시하도록 합니다.
-     *
+     * <p>
      * 문제 발생 원인
      * 1) 클래스 구조:
      * A라는 조부모 클래스가 있고, B와 C라는 두 자식 클래스가 각각 A를 상속받습니다.
@@ -137,11 +137,12 @@ public class User extends BaseEntity {
      * D라는 클래스가 B와 C를 동시에 상속받는데, A에 정의된 메서드와 동일한 이름의 메서드를 B와 C가 각각 오버라이딩(또는 상속받아) 가지고 있는 경우입니다.
      * 3) 호출의 모호성:
      * D 클래스가 해당 메서드를 호출하면, B를 통해 호출되는 것과 C를 통해 호출되는 것 중 어느 메서드가 실행되어야 하는지 컴파일러가 알 수 없어 오류가 발생합니다.
-     *
+     * <p>
      * 문제 해결 방안
      * 자바의 인터페이스 다중 상속: 자바는 클래스의 다중 상속은 허용하지 않지만, 인터페이스의 다중 상속은 허용합니다.
      * default 메서드 해결: 인터페이스에 default 메서드가 있는 경우, 다이아몬드 문제가 발생할 수 있는데, 이 경우 클래스에서 어떤 default 메서드를 사용할지 명확하게 재정의하여 충돌을 해결해야 합니다.
-     * */
+     *
+     */
 
     // <<<----- 필드 ------>>>
     @Id
@@ -163,12 +164,12 @@ public class User extends BaseEntity {
     //AUTO: 벤더별 기본 전략 자동 선택.
     private Long id;
 
-    @Column(name = "user_name", nullable=false, length=50, unique=true)
+    @Column(name = "user_name", nullable = false, length = 50, unique = true)
     private String name;
     // @Column을 생략하면 기본 컬럼 매핑. 보통 VARCHAR(255), nullable=true로 생성(디폴트).
     // 비즈니스 제약(UNIQUE/NOT NULL/길이)은 @Column(nullable=false, length=...), @UniqueConstraint 등으로 명시 추천.
 
-    @Column(nullable=false, length=60, unique=true)
+    @Column(nullable = false, length = 60, unique = true)
     // length 크기설정
     // size dto에서 설정.
     // unique에서 UK 설정.
@@ -181,19 +182,34 @@ public class User extends BaseEntity {
      * 1) 왜 쓰나?
      * 데이터 무결성: “이 컬럼은 비워지면 안 된다”, “이 정도 길이를 넘겨선 안 된다” 같은 업무 규칙을 DB 레벨로 강제합니다.
      * 성능 / 저장 효율: 길이 / 인덱스 선택은 저장 공간과 검색 성능에 직접 영향을 줍니다.
-     *
+     * <p>
      * 2) 원리/논리
      * @Column(nullable=false) → NOT NULL 제약을 DDL에 반영(스키마 생성 사용 시).
      * @Column(length=60) → VARCHAR(60) 같은 타입 길이를 DDL에 반영.
      * @Column(unique=true) → UNIQUE 인덱스/제약을 생성(벤더마다 구현은 다소 차이).
-     *
+     * <p>
      * 3) 팁/주의
      * @Column(unique=true)는 단일 컬럼 유니크일 땐 간편하지만, 복합 유니크(예: orgId + email)는 아래의 @Table(uniqueConstraints=...)를 쓰세요.
      * Bean Validation(@NotBlank, @Email, @Size)은 애플리케이션 레벨, @Column은 DB 레벨. 둘 다 쓰면 “빠른 피드백 + 최종 안전망”이 됩니다.
      * columnDefinition은 DB 의존적이라 이식성이 떨어집니다. 꼭 필요할 때만 사용.
-     * */
+     *
+     */
 
     public User(String name, String email, String password) {
+        this.name = name;
+        this.email = email;
+        this.password = password;
+    }
+
+    private User(Long id) {
+        this.id = id;
+    }
+
+    public static User fromUserId(Long id) {
+        return new User(id);
+    }
+
+    public void update(String name, String email, String password) {
         this.name = name;
         this.email = email;
         this.password = password;
