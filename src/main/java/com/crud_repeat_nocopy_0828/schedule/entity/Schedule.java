@@ -16,13 +16,16 @@ public class Schedule extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String userName;
+//    private String userName;      // 유저 엔티티 연관관계 설정
     private String title;
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;      // 지금은 User로 보이지만, 실제로는 user_id 로만 활용된다
+    // 이건 안 됨. private Long userId;
+    // 데이터베이스는 연관관계를 id를 활용한다. - 데이터베이스의 패러다임
+    // 객체지향 - 자바 스프링에서의 패러다임
 
     /**
      * @JoinColumn과 @JoinColumns의 차이는?
@@ -35,10 +38,10 @@ public class Schedule extends BaseEntity {
     // @OneToMany : @ManyToOne이 존재하기 전까지는 절대로 존재할 수 없는 친구 - 양방향
     // @ManyToOne
 
+    // id를 제외한 나머지
     public Schedule(User user,
-                    String userName, String title, String content) {
+                    String title, String content) {
         this.user = user;
-        this.userName = userName;
         this.title = title;
         this.content = content;
     }
